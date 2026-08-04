@@ -117,6 +117,16 @@ the destination that no longer exist at the source, exactly as `rclone sync` nor
 the matching `-dry` variant first if you're unsure, and note that only the real (non-dry)
 commands prompt for confirmation before running, in either direction.
 
+Both sync commands respect an optional per-destination `destinations/<name>/filters.txt`
+(rename from `filters.txt.template` to activate), passed to rclone via `--filter-from` — see
+[rclone's filtering docs](https://rclone.org/filtering/) for the rule syntax. By default,
+files excluded by the filter are left alone at the destination forever, even after they stop
+matching your filter, since sync simply never sees them again on either side. Setting
+`PRUNE_EXCLUDED="true"` in a destination's `config.sh` changes that: sync will then also
+**delete** anything at the destination currently matched by an exclude rule, not just files
+freshly excluded — rclone's own docs call this "dangerous to your data," so test with
+`remote-backup-sync-dry` first.
+
 GNOME/GIO-based file managers (Nautilus, Nemo, ...) tend to only show a mount in their sidebar
 automatically when `BASE_MOUNT`/`BACKUP_MOUNT` is under your home directory — mounting elsewhere
 (e.g. `/mnt/...`) loses that convenience. There's no portable fix for this: rclone can pass

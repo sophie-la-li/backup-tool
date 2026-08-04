@@ -402,8 +402,12 @@ mount_remote() {
 # Prompts before any real (non-dry-run) sync, since rclone sync deletes anything at the
 # destination that isn't at the source - true in both directions.
 confirm_sync() {
-    local src="$1" dest="$2"
-    warn "This will sync $src -> $dest, deleting anything at the destination that's not at the source."
+    local src="$1" dest="$2" prune="${3:-false}"
+    if [[ "$prune" == "true" ]]; then
+        warn "This will sync $src -> $dest AND delete everything at the destination currently matched by your filter - not just newly-excluded files, anything excluded, however long it's been there."
+    else
+        warn "This will sync $src -> $dest, deleting anything at the destination that's not at the source."
+    fi
     local answer
     read -r -p "Are you sure? [y/N] " answer
     [[ "$answer" =~ ^[Yy] ]] || die "Aborted."
@@ -411,6 +415,7 @@ confirm_sync() {
 
 sync_remote() {
     local target="$1" dryrun="$2" reverse="${3:-false}"
+    local prune="${PRUNE_EXCLUDED:-false}"
     local remote="${TARGET_REMOTE[$target]}"
 
     [[ "${TARGET_SUPPORTS_SYNC[$target]}" == "true" ]] || die "Target '$target' does not support sync."
@@ -423,10 +428,11 @@ sync_remote() {
         src="$LOCAL_BACKUP_DIR" dest="$remote"
     fi
 
-    [[ "$dryrun" == "true" ]] || confirm_sync "$src" "$dest"
+    [[ "$dryrun" == "true" ]] || confirm_sync "$src" "$dest" "$prune"
 
     local args=(sync "$src" "$dest" --progress --stats=2s -v --combined -)
     [[ "$dryrun" == "true" ]] && args+=(--dry-run)
+    [[ "$prune" == "true" ]] && args+=(--delete-excluded)
     [[ -f "$FILTER_FILE" ]] && args+=(--filter-from "$FILTER_FILE")
 
     run_rclone "${args[@]}" || die "Sync from $src to $dest failed."
