@@ -1,0 +1,7 @@
+[base]
+type = sftp
+host = __HOST__
+user = __USER__
+pass = __PASSWORD__
+__HOST_KEYS_LINE__
+

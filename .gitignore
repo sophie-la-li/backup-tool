@@ -1,0 +1,16 @@
+# Mount points
+/mounts/
+
+# Destination configs are machine/instance specific - only the example template is versioned
+/destinations/*
+!/destinations/_example/
+
+# Pinned SSH host keys are per-destination local state, not secrets, but not shared either
+/destinations/*/host_key
+
+# Which destination is active is a per-machine choice
+/current_destination
+
+# Devs local test files (sorry)
+/test-backup
+/test-local

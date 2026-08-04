@@ -1,0 +1,6 @@
+[backup]
+type = crypt
+remote = base:__BASE_REMOTE_PATH__
+password = __CRYPT_PASSWORD__
+password2 = __CRYPT_PASSWORD2__
+

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Copy this whole directory to destinations/<name>/ and edit config.sh (this file, once
+# renamed) for your setup, then run: ./script.sh destinations-use <name>
+#
+# Only the section matching BASE_TYPE below is actually used - the other section can be left
+# as-is or deleted.
+
+BASE_TYPE="sftp"                  # "sftp" or "local"
+BACKUP_PATH="backup"              # subpath (under the base) where encrypted data is written
+LOCAL_BACKUP_DIR="$HOME/backup"   # local source directory this destination backs up
+
+# --- BASE_TYPE=sftp fields ---
+STORAGEBOX_HOST="u000000.your-storagebox.de"
+STORAGEBOX_USER="u000000"
+
+# --- BASE_TYPE=local fields ---
+LOCAL_BASE_PATH="/mnt/usb-drive"
+
+# --- Mount options (rclone mount / vfs), apply regardless of BASE_TYPE ---
+VFS_CACHE_MODE="writes"
+VFS_CACHE_MAX_AGE="24h"
+VFS_WRITE_BACK="1s"
+POLL_INTERVAL="30s"
+
+# Optional: override where `remote-mount`/`remote-backup-mount` mount to. Defaults to
+# mounts/<this destination's name>/base and .../backup (relative to the project dir) if unset.
+# BASE_MOUNT="/custom/path/to/mount/base"
+# BACKUP_MOUNT="/custom/path/to/mount/backup"
+
