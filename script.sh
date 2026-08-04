@@ -211,7 +211,7 @@ init_secret() {
 
 collect_secrets() {
     if [[ "$BASE_TYPE" == "sftp" ]]; then
-        BASE_PASSWORD="$(get_or_prompt_secret "$DESTINATION-password" "StorageBox password" false)"
+        BASE_PASSWORD="$(get_or_prompt_secret "$DESTINATION-password" "SFTP password" false)"
     fi
     CRYPT_PASSWORD="$(get_or_prompt_secret "$DESTINATION-crypt-password" "Crypt password" false)"
     CRYPT_PASSWORD2="$(get_or_prompt_secret "$DESTINATION-crypt-password2" "Crypt salt (optional)" true)"
@@ -220,7 +220,7 @@ collect_secrets() {
 secrets_init() {
     info "Setting up secrets for destination '$DESTINATION'."
     if [[ "$BASE_TYPE" == "sftp" ]]; then
-        init_secret "$DESTINATION-password" "StorageBox password" false
+        init_secret "$DESTINATION-password" "SFTP password" false
     fi
     init_secret "$DESTINATION-crypt-password" "Crypt password (optional, press enter to skip and be prompted at run time)" true false
     init_secret "$DESTINATION-crypt-password2" "Crypt salt (optional, press enter to skip)" true true
@@ -229,7 +229,7 @@ secrets_init() {
 
 secrets_show() {
     local entries=()
-    [[ "$BASE_TYPE" == "sftp" ]] && entries+=("$DESTINATION-password:StorageBox password")
+    [[ "$BASE_TYPE" == "sftp" ]] && entries+=("$DESTINATION-password:SFTP password")
     entries+=("$DESTINATION-crypt-password:Crypt password" "$DESTINATION-crypt-password2:Crypt salt")
 
     local entry name label
@@ -267,18 +267,18 @@ secrets_delete() {
 ensure_known_host() {
     [[ -s "$HOST_KEY_FILE" ]] && return
 
-    info "No pinned host key yet for $STORAGEBOX_HOST - connecting once to fetch and pin it (TOFU)."
+    info "No pinned host key yet for $SFTP_HOST - connecting once to fetch and pin it (TOFU)."
 
     local probe_dir probe_config probe_output
     probe_dir="$(mktemp -d)"
     probe_config="$probe_dir/rclone.conf"
     printf '[base]\ntype = sftp\nhost = %s\nuser = %s\npass = %s\n' \
-        "$STORAGEBOX_HOST" "$STORAGEBOX_USER" "$(rclone obscure "$BASE_PASSWORD")" > "$probe_config"
+        "$SFTP_HOST" "$SFTP_USER" "$(rclone obscure "$BASE_PASSWORD")" > "$probe_config"
     chmod 600 "$probe_config"
 
     if ! probe_output="$(rclone --config "$probe_config" --sftp-pin-host-key lsd base: 2>&1 >/dev/null)"; then
         rm -rf "$probe_dir"
-        die "Could not connect to pin the host key - check the StorageBox host/credentials and try again."
+        die "Could not connect to pin the host key - check the SFTP host/credentials and try again."
     fi
 
     warn "$probe_output"
@@ -316,8 +316,8 @@ generate_config() {
             obscured_password="$(rclone obscure "$BASE_PASSWORD")"
             host_keys_line="$(cat "$HOST_KEY_FILE")"
             sed \
-                -e "s|__HOST__|$STORAGEBOX_HOST|g" \
-                -e "s|__USER__|$STORAGEBOX_USER|g" \
+                -e "s|__HOST__|$SFTP_HOST|g" \
+                -e "s|__USER__|$SFTP_USER|g" \
                 -e "s|__PASSWORD__|$obscured_password|g" \
                 -e "s|__HOST_KEYS_LINE__|$host_keys_line|g" \
                 "$SCRIPT_DIR/templates/base-sftp.conf.template" > "$TMP_CONFIG"

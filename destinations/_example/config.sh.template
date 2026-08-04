@@ -10,8 +10,8 @@ BACKUP_PATH="backup"              # subpath (under the base) where encrypted dat
 LOCAL_BACKUP_DIR="$HOME/backup"   # local source directory this destination backs up
 
 # --- BASE_TYPE=sftp fields ---
-STORAGEBOX_HOST="u000000.your-storagebox.de"
-STORAGEBOX_USER="u000000"
+SFTP_HOST="example.com"           # e.g. a Hetzner StorageBox: u000000.your-storagebox.de
+SFTP_USER="myuser"                # e.g. a Hetzner StorageBox: u000000
 
 # --- BASE_TYPE=local fields ---
 LOCAL_BASE_PATH="/mnt/usb-drive"
