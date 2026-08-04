@@ -399,18 +399,37 @@ mount_remote() {
     fi
 }
 
+# Prompts before any real (non-dry-run) sync, since rclone sync deletes anything at the
+# destination that isn't at the source - true in both directions.
+confirm_sync() {
+    local src="$1" dest="$2"
+    warn "This will sync $src -> $dest, deleting anything at the destination that's not at the source."
+    local answer
+    read -r -p "Are you sure? [y/N] " answer
+    [[ "$answer" =~ ^[Yy] ]] || die "Aborted."
+}
+
 sync_remote() {
-    local target="$1" dryrun="$2"
+    local target="$1" dryrun="$2" reverse="${3:-false}"
     local remote="${TARGET_REMOTE[$target]}"
 
     [[ "${TARGET_SUPPORTS_SYNC[$target]}" == "true" ]] || die "Target '$target' does not support sync."
     [[ -d "$LOCAL_BACKUP_DIR" ]] || die "Local backup directory not found: $LOCAL_BACKUP_DIR"
 
-    local args=(sync "$LOCAL_BACKUP_DIR" "$remote" --progress --stats=2s -v --combined -)
+    local src dest
+    if [[ "$reverse" == "true" ]]; then
+        src="$remote" dest="$LOCAL_BACKUP_DIR"
+    else
+        src="$LOCAL_BACKUP_DIR" dest="$remote"
+    fi
+
+    [[ "$dryrun" == "true" ]] || confirm_sync "$src" "$dest"
+
+    local args=(sync "$src" "$dest" --progress --stats=2s -v --combined -)
     [[ "$dryrun" == "true" ]] && args+=(--dry-run)
     [[ -f "$FILTER_FILE" ]] && args+=(--filter-from "$FILTER_FILE")
 
-    run_rclone "${args[@]}" || die "Sync to $remote failed."
+    run_rclone "${args[@]}" || die "Sync from $src to $dest failed."
 }
 
 # --- Usage ----------------------------------------------------------------
@@ -430,6 +449,8 @@ Commands (operate on the active destination):
   remote-backup-mount         Mount the encrypted backup target.
   remote-backup-sync-dry      Show what a backup sync would change (no writes).
   remote-backup-sync          Sync LOCAL_BACKUP_DIR to the encrypted backup target.
+  remote-backup-restore-dry   Show what a restore (backup target -> local) would change.
+  remote-backup-restore       Sync the encrypted backup target down to LOCAL_BACKUP_DIR.
   secrets-init                 Interactively store required secrets.
   secrets-show                 Show which secrets are stored (never prints values).
   secrets-delete                Delete all stored secrets for this destination.
@@ -473,6 +494,18 @@ main() {
             collect_secrets
             generate_config
             sync_remote backup false
+            ;;
+        remote-backup-restore-dry)
+            load_destination_config
+            collect_secrets
+            generate_config
+            sync_remote backup true true
+            ;;
+        remote-backup-restore)
+            load_destination_config
+            collect_secrets
+            generate_config
+            sync_remote backup false true
             ;;
         secrets-init)
             load_destination_config

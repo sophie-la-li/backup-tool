@@ -103,15 +103,19 @@ shared between destinations except the `script.sh` logic itself.
 ./script.sh remote-backup-mount       # mount the encrypted backup target
 ./script.sh remote-backup-sync-dry    # preview what a sync would change
 ./script.sh remote-backup-sync        # sync LOCAL_BACKUP_DIR to the encrypted backup target
+./script.sh remote-backup-restore-dry # preview what a restore would change
+./script.sh remote-backup-restore     # sync the encrypted backup target down to LOCAL_BACKUP_DIR
 ./script.sh secrets-init              # interactively store secrets for the active destination
 ./script.sh secrets-show              # show which secrets are stored (never prints values)
 ./script.sh secrets-delete            # remove stored secrets for the active destination
 ./script.sh help
 ```
 
-Mounts run in the foreground; press Ctrl+C to unmount. Sync deletes files on the destination
-that no longer exist locally, exactly as `rclone sync` normally does — use `remote-backup-sync-dry`
-first if you're unsure.
+Mounts run in the foreground; press Ctrl+C to unmount. Both `remote-backup-sync` (local ->
+backup) and `remote-backup-restore` (backup -> local, the reverse direction) delete files at
+the destination that no longer exist at the source, exactly as `rclone sync` normally does — use
+the matching `-dry` variant first if you're unsure, and note that only the real (non-dry)
+commands prompt for confirmation before running, in either direction.
 
 GNOME/GIO-based file managers (Nautilus, Nemo, ...) tend to only show a mount in their sidebar
 automatically when `BASE_MOUNT`/`BACKUP_MOUNT` is under your home directory — mounting elsewhere
