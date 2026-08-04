@@ -27,3 +27,14 @@ POLL_INTERVAL="30s"
 # BASE_MOUNT="/custom/path/to/mount/base"
 # BACKUP_MOUNT="/custom/path/to/mount/backup"
 
+# Optional: also applies to FILTER_FILE (see filters.txt.template) - override its path if unset,
+# defaults to filters.txt next to this config.
+# FILTER_FILE="/custom/path/to/filters.txt"
+
+# Dangerous - rclone's own docs call this "dangerous to your data": makes remote-backup-sync
+# and remote-backup-restore also DELETE anything at the destination currently matched by
+# FILTER_FILE's exclude rules - not just newly-excluded files, anything excluded, however long
+# it's been there. Without this, sync only ever leaves excluded destination files alone, it
+# never cleans them up on its own. Test with remote-backup-sync-dry first. Default: false.
+PRUNE_EXCLUDED="false"
+
