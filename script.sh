@@ -9,6 +9,7 @@ DESTINATION=""
 BASE_MOUNT=""
 BACKUP_MOUNT=""
 HOST_KEY_FILE=""
+FILTER_FILE=""
 
 TMP_DIR=""
 TMP_CONFIG=""
@@ -61,10 +62,11 @@ load_destination_config() {
         *) die "Unknown BASE_TYPE '$BASE_TYPE' in destinations/$DESTINATION/config.sh (expected sftp or local)." ;;
     esac
 
-    # config.sh may set BASE_MOUNT/BACKUP_MOUNT itself to override these defaults.
+    # config.sh may set BASE_MOUNT/BACKUP_MOUNT/FILTER_FILE itself to override these defaults.
     BASE_MOUNT="${BASE_MOUNT:-$SCRIPT_DIR/mounts/$DESTINATION/base}"
     BACKUP_MOUNT="${BACKUP_MOUNT:-$SCRIPT_DIR/mounts/$DESTINATION/backup}"
     HOST_KEY_FILE="$SCRIPT_DIR/destinations/$DESTINATION/host_key"
+    FILTER_FILE="${FILTER_FILE:-$SCRIPT_DIR/destinations/$DESTINATION/filters.txt}"
 
     declare -gA TARGET_REMOTE=(
         [base]="$(base_root_remote)"
@@ -406,6 +408,7 @@ sync_remote() {
 
     local args=(sync "$LOCAL_BACKUP_DIR" "$remote" --progress --stats=2s -v --combined -)
     [[ "$dryrun" == "true" ]] && args+=(--dry-run)
+    [[ -f "$FILTER_FILE" ]] && args+=(--filter-from "$FILTER_FILE")
 
     run_rclone "${args[@]}" || die "Sync to $remote failed."
 }

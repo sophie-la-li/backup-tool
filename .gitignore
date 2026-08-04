@@ -8,6 +8,9 @@
 # Pinned SSH host keys are per-destination local state, not secrets, but not shared either
 /destinations/*/host_key
 
+# Per-destination sync filters are local customization, not shared (only the .template is)
+/destinations/*/filters.txt
+
 # Which destination is active is a per-machine choice
 /current_destination
 
