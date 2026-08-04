@@ -1,0 +1,14 @@
+# Optional rclone filter rules for this destination's sync (rename to filters.txt to activate;
+# leave absent for no filtering). Passed to `rclone sync` via --filter-from. Only affects
+# remote-backup-sync/-dry, not the mount commands.
+#
+# One rule per line, "+" to include, "-" to exclude, evaluated top to bottom, first match wins.
+# Full syntax: https://rclone.org/filtering/
+#
+# Examples:
+# - /node_modules/**
+# - *.tmp
+# - .DS_Store
+# + *.important
+# - *
+
