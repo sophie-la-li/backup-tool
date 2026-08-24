@@ -382,7 +382,7 @@ mount_remote() {
         --vfs-cache-max-age "$VFS_CACHE_MAX_AGE" \
         --vfs-write-back "$VFS_WRITE_BACK" \
         --poll-interval "$POLL_INTERVAL" \
-        --log-level INFO
+        --log-level INFO \
         2>&1 | tee "$MOUNT_LOG"; then
         status=0
     else
